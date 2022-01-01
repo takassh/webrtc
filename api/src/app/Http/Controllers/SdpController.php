@@ -10,12 +10,13 @@ class SdpController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'id' => 'required',
-            // 'sdp' => 'required',
-            'type' => 'required|in:offer,answer,candidate'
+            'sdp' => 'required',
+            'socket_id' => 'required',
+            'type' => 'required|in:offer,answer'
         ]);
 
-
         broadcast(new SdpEvent($request->all()))->toOthers();
+
+        return 'success';
     }
 }

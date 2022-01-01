@@ -19,7 +19,6 @@ class CheckEvent implements ShouldBroadcastNow
      */
     public function __construct()
     {
-
     }
 
     /**
@@ -34,6 +33,6 @@ class CheckEvent implements ShouldBroadcastNow
 
     public function broadcastWith()
     {
-        return ['message' => 'success!'];
+        return ['message' => 'success!', 'socket_id' => '123456789'];
     }
 }

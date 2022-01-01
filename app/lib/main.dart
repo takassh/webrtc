@@ -1,6 +1,7 @@
+import 'package:app/webrtc_implment.dart';
+import 'package:app/webrtc_interface.dart';
 import 'package:flutter/material.dart';
-import 'package:laravel_echo/laravel_echo.dart';
-import 'package:socket_io_client/socket_io_client.dart';
+import 'package:flutter_webrtc/flutter_webrtc.dart';
 
 void main() {
   runApp(const MyApp());
@@ -31,9 +32,16 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  final _remoteRenderer = RTCVideoRenderer();
+  final _localRenderer = RTCVideoRenderer();
+  late final WebrtcInterface _webrtcInterface;
+
   @override
   void initState() {
-    _createClient();
+    _remoteRenderer.initialize();
+    _webrtcInterface = WebrtcImplement(onTrack, _localRenderer, () {
+      setState(() {});
+    });
     super.initState();
   }
 
@@ -43,40 +51,58 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: Text(widget.title),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '',
-              style: Theme.of(context).textTheme.headline4,
-            ),
-          ],
+      body: SafeArea(
+        child: Center(
+          child: Column(
+            children: [
+              const Text('You'),
+              Expanded(
+                child: Container(
+                  width: MediaQuery.of(context).size.width,
+                  decoration: const BoxDecoration(color: Colors.black54),
+                  child: RTCVideoView(_localRenderer),
+                ),
+              ),
+              const Divider(height: 1.0),
+              const Text('Other'),
+              Expanded(
+                child: Container(
+                  width: MediaQuery.of(context).size.width,
+                  decoration: const BoxDecoration(color: Colors.black54),
+                  child: RTCVideoView(_remoteRenderer),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    ElevatedButton(
+                      onPressed: _webrtcInterface.makeOffer,
+                      child: const Text('call'),
+                    ),
+                    ElevatedButton(
+                      onPressed: _webrtcInterface.disconnect,
+                      child: const Text('disconnect'),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          setState(() {});
+        },
       ),
     );
   }
 
-  void _createClient() {
-    Socket socket = io(
-      'http://localhost',
-      OptionBuilder().disableAutoConnect().setTransports(['websocket']).build(),
-    );
-
-    Echo echo = Echo(
-      broadcaster: EchoBroadcasterType.SocketIO,
-      client: socket,
-    );
-
-    // Listening public channel
-    echo.channel('check-channel').listen('CheckEvent', (e) {
-      debugPrint(e.toString());
+  void onTrack(RTCTrackEvent event) {
+    setState(() {
+      _remoteRenderer.srcObject = event.streams[0];
     });
-
-    echo.connector.socket.on('connect', (_) => debugPrint('connected'));
-    echo.connector.socket.on('disconnect', (_) => debugPrint('disconnected'));
   }
 }
