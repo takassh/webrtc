@@ -182,6 +182,8 @@ class WebrtcImplement implements WebrtcInterface {
     final remoteSessionDescription = RTCSessionDescription(remoteSdp, 'offer');
     if (_peerConnection != null) {
       debugPrint('already connection exist');
+    } else {
+      await makePeerConnection(onTrack, localRenderer, initializedCallback);
     }
 
     await _peerConnection!.setRemoteDescription(remoteSessionDescription);
