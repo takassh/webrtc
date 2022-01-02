@@ -1,7 +1,6 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { Box, Button, Flex, Text } from '@chakra-ui/react';
+import React, { useEffect, useRef } from 'react';
 import './App.css';
-import { Box, Button, Flex } from '@chakra-ui/react'
-import { Text } from '@chakra-ui/react'
 import WebrtcImplement from './services/webrtcImplement';
 
 function App() {
